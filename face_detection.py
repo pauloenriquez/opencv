@@ -1,7 +1,8 @@
+import streamlit as st
 import numpy as np
 import cv2
-import tkinter as tk
-from tkinter import filedialog
+from PIL import Image
+import io
 import subprocess
 
 def install_required_packages():
@@ -11,44 +12,44 @@ def install_required_packages():
         try:
             __import__(package)
         except ImportError:
-            print(f"{package} not found. Installing...")
+            st.warning(f"{package} not found. Installing...")
             subprocess.run(["pip", "install", package])
 
-
+# Install required packages
 install_required_packages()
-# Create a simple Tkinter window
-root = tk.Tk()
-root.withdraw()  # Hide the main window
 
-# Ask the user to choose an image file
-uploaded = filedialog.askopenfilename(title="Select an Image File", filetypes=[("Image files", "*.png;*.jpg;*.jpeg;*.bmp;*.gif")])
+# Streamlit app
+st.title("Face and Eye Detection App")
 
-# Check if the user selected a file
-if not uploaded:
-    print("No file selected. Exiting.")
-    exit()
+# Upload an image through Streamlit
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png", "bmp", "gif"])
 
-# Load the selected image
-img = cv2.imread(uploaded)
-if img is None:
-    print("Error: Unable to load the image.")
-    exit()
+if uploaded_file is not None:
+    # Display the uploaded image
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Image.", use_column_width=True)
 
-# Rest of your code remains unchanged
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
+    # Convert the image to OpenCV format
+    img_np = np.array(image)
+    img = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
 
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-faces = face_cascade.detectMultiScale(gray, 1.3, 3)
+    # Face and eye detection
+    face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+    eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
 
-for (x, y, w, h) in faces:
-    img = cv2.rectangle(img, (x, y), (x+w, y+h), (255, 0, 0), 2)
-    roi_gray = gray[y:y+h, x:x+w]
-    roi_color = img[y:y+h, x:x+w]
-    eyes = eye_cascade.detectMultiScale(roi_gray)
-    for (ex, ey, ew, eh) in eyes:
-        cv2.rectangle(roi_color, (ex, ey), (ex+ew, ey+eh), (0, 255, 0), 2)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    faces = face_cascade.detectMultiScale(gray, 1.3, 3)
 
-cv2.imshow('img', img)
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+    for (x, y, w, h) in faces:
+        img = cv2.rectangle(img, (x, y), (x+w, y+h), (255, 0, 0), 2)
+        roi_gray = gray[y:y+h, x:x+w]
+        roi_color = img[y:y+h, x:x+w]
+        eyes = eye_cascade.detectMultiScale(roi_gray)
+        for (ex, ey, ew, eh) in eyes:
+            cv2.rectangle(roi_color, (ex, ey), (ex+ew, ey+eh), (0, 255, 0), 2)
+
+    # Display the processed image
+    st.image(img, caption="Processed Image.", use_column_width=True)
+
+    # Optionally display coordinates or other information
+    st.write(f"Number of faces detected: {len(faces)}")
