@@ -6,6 +6,8 @@ setup(
     packages=find_packages(),
     install_requires=[
         'opencv-python',
+        'Pillow'
+        'streamlit'
         # other dependencies
     ],
 )
