@@ -2,7 +2,20 @@ import numpy as np
 import cv2
 import tkinter as tk
 from tkinter import filedialog
+import subprocess
 
+def install_required_packages():
+    packages = ['streamlit', 'numpy', 'opencv-python', 'Pillow']
+
+    for package in packages:
+        try:
+            __import__(package)
+        except ImportError:
+            print(f"{package} not found. Installing...")
+            subprocess.run(["pip", "install", package])
+
+
+install_required_packages()
 # Create a simple Tkinter window
 root = tk.Tk()
 root.withdraw()  # Hide the main window
