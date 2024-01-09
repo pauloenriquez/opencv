@@ -1,10 +1,14 @@
-import streamlit as st
-import cv2
-import numpy as np
+import subprocess
 
-# Load the Haar cascades
-face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
+def install_required_packages():
+    packages = ['streamlit', 'numpy', 'opencv-python']
+
+    for package in packages:
+        try:
+            __import__(package)
+        except ImportError:
+            print(f"{package} not found. Installing...")
+            subprocess.run(["pip", "install", package])
 
 def detect_faces_and_eyes(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -22,8 +26,19 @@ def detect_faces_and_eyes(frame):
     return frame
 
 def main():
+    # Install required packages
+    install_required_packages()
+
+    import streamlit as st
+    import cv2
+    import numpy as np
+
     st.title("Face and Eye Detection with OpenCV and Streamlit")
     st.sidebar.header("Settings")
+
+    # Load the Haar cascades
+    face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+    eye_cascade = cv2.CascadeClassifier('haarcascade_eye.xml')
 
     # Open the webcam
     cap = cv2.VideoCapture(0)
